@@ -55,10 +55,7 @@ const passwordError = computed(() => {
 // 送信時チェック
 function validate() {
   // 未入力チェック
-  // Prettierテスト
-}
-
-// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@gmail.com
+} // Prettierテスト
 </script>
 
 <template>
