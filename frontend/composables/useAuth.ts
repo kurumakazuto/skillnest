@@ -10,7 +10,7 @@ export const useAuth = () => {
 
   // 新規登録
   const signUp = async (reqBody: SignUpPostRequest) => {
-    const { data, error } = await useFetch<SignUpPostResponse>('/api/auth/signUp', {
+    const { data, error } = await useFetch<SignUpPostResponse>('api/signUp', {
       method: 'POST',
       body: reqBody,
     })
@@ -20,7 +20,7 @@ export const useAuth = () => {
 
   // ログイン
   const signIn = async (reqBody: SignInPostRequest) => {
-    const { data, error } = await useFetch<SignInPostResponse>('/api/auth/signIn', {
+    const { data, error } = await useFetch<SignInPostResponse>('/api/signIn', {
       method: 'POST',
       body: reqBody,
     })

@@ -1,0 +1,14 @@
+{
+  "shopInfo": {
+    "name": "naiki",
+    "location": "Tokyo"
+  },
+  "items": [
+    {
+      "name": "T-shirt",
+      "description": "yasuiyo",
+      "price": 50000,
+      "tax": 1.8
+    }
+  ]
+}
