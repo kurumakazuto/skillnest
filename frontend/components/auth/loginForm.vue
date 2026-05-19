@@ -32,6 +32,7 @@ function hasSpace(password: string) {
   return /\s/.test(password)
 }
 // 即時チェック
+// TODO: エラーメッセージ用のフィアルを作成し、エラー文は定数化しておいた方が良い。
 const idError = computed(() => {
   const id = userInfo.value.email
   if (!id) return ''
@@ -52,9 +53,50 @@ const passwordError = computed(() => {
 })
 
 // 送信時チェック
+const inputError = ref<any[]>([])
 function validate() {
-  // 未入力チェック
-} // Prettierテスト
+  let error: any
+  // 未入力
+  // メールアドレス
+  const isEmailEmpty = userInfo.value.email
+  if (!isEmailEmpty) {
+    error = {
+      index: 0,
+    }
+    inputError.value.push(error)
+  }
+  // パスワード
+  const isPasswordEmpty = userInfo.value.password
+  if (!isPasswordEmpty) {
+    error = {
+      index: 1,
+    }
+    inputError.value.push(error)
+  }
+  if (!inputError.value.length) {
+    loginUser()
+  }
+}
+
+async function loginUser() {
+  const reqBody = {
+    email: userInfo.value.email,
+    password: userInfo.value.password,
+  }
+  const { data } = await useAuth().signIn(reqBody)
+  if (data.value?.success) {
+    await navigateTo('/skillSheetPage')
+  }
+}
+
+// エラーがある場合は作成ボタンは非活性
+const hasError = computed(() => {
+  return Boolean(idError.value) || Boolean(passwordError.value)
+})
+// 入力がない場合は作成ボタンは非活性
+const isFormEmpty = computed(() => {
+  return !userInfo.value.email && !userInfo.value.password
+})
 </script>
 
 <template>
@@ -78,7 +120,7 @@ function validate() {
     <span class="w-full text-red-500" v-if="passwordError">{{ `！ ${passwordError}` }}</span>
   </div>
   <div class="text-center mb-12">
-    <UiButton label="ログイン" :disabled="Boolean(idError) || Boolean(passwordError)" />
+    <UiButton label="ログイン" :disabled="hasError || isFormEmpty" @click="validate()" />
   </div>
   <div class="text-center">
     <NuxtLink
