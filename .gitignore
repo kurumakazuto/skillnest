@@ -24,3 +24,11 @@ logs
 !.env.example
 
 /generated/prisma
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv
+venv
