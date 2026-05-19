@@ -1,3 +1,5 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+await navigateTo('/login')
+</script>
 
 <template></template>

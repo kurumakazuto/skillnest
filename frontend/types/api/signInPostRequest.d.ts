@@ -1,4 +1,4 @@
 export interface SignInPostRequest {
-  loginId: string
+  email: string
   password: string
 }
