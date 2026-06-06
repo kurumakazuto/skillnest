@@ -1,0 +1,133 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// データソース（MySQL）
+datasource db {
+  provider = "mysql"
+  // url      = env("DATABASE_URL") // Prisma 7 ではここに置けない
+}
+
+// モデル定義
+// ユーザー
+model User {
+  id             String              @id @default(uuid())
+  email          String              @unique
+  password       String
+  name           String? // 氏名
+  nameKana       String? // ふりがな
+  gender         String? // 性別
+  birthDate      DateTime? // 誕生日
+  nationality    String? // 国籍
+  hasSpouse      Boolean? // 配偶者
+  nearestStation String? // 最寄駅
+  qualifications UserQualification[] // 資格
+  skills         UserSkill[] // 経験技術
+  specialties    String? // 得意分野
+  selfPromotion  String? // 自己PR
+  projects       Project[] // 経験プロジェクト
+  createdAt      DateTime            @default(now())
+}
+
+// 資格（基本情報技術者試験など）
+model Qualification {
+  id    String              @id @default(uuid())
+  name  String              @unique
+  users UserQualification[]
+}
+
+model UserQualification {
+  userId          String
+  qualificationId String
+  acquiredAt      DateTime? // 取得年月
+  user            User          @relation(fields: [userId], references: [id])
+  qualification   Qualification @relation(fields: [qualificationId], references: [id])
+
+  @@unique([userId, qualificationId]) // 同じ資格を重複登録させない
+  @@index([userId])
+}
+
+// 経験技術
+model Skill {
+  id    String      @id @default(uuid())
+  name  String      @unique
+  users UserSkill[]
+}
+
+model UserSkill {
+  userId  String
+  skillId String
+
+  user  User  @relation(fields: [userId], references: [id])
+  skill Skill @relation(fields: [skillId], references: [id])
+
+  @@id([userId, skillId])
+  @@index([userId])
+  @@index([skillId])
+}
+
+// プロジェクト
+model Project {
+  id                        String             @id @default(uuid())
+  userId                    String
+  title                     String // プロジェクト名
+  summary                   String // 概要（= プロジェクト概要）
+  role                      String? // 役割
+  developmentScale          Int? // 開発規模（人数）
+  overallScale              Int? // 全体規模（人数）
+  server                    String? // サーバー
+  os                        String? // OS
+  db                        String? // データベース
+  techStacks                ProjectTechStack[] // FW・MW・ツール等
+  languages                 ProjectLanguage[] // 使用言語
+  hasRequirementsDefinition Boolean            @default(false) // 要件定義
+  hasBasicDesign            Boolean            @default(false) // 基本設計
+  hasDetailedDesign         Boolean            @default(false) // 詳細設計
+  hasImplementationUnitTest Boolean            @default(false) // 実装・単体テスト
+  hasIntegrationTest        Boolean            @default(false) // 結合テスト
+  hasSystemTest             Boolean            @default(false) // 総合テスト
+  hasMaintenanceOperation   Boolean            @default(false) // 保守・運用
+  user                      User               @relation(fields: [userId], references: [id])
+}
+
+model ProjectTechStack {
+  projectId   String
+  techStackId String
+
+  project   Project   @relation(fields: [projectId], references: [id])
+  techStack TechStack @relation(fields: [techStackId], references: [id])
+
+  @@id([projectId, techStackId]) // 複合主キー：同じ組み合わせの重複を防ぐ
+  @@index([techStackId])
+}
+
+// FW・MW・ツール等
+model TechStack {
+  id       String             @id @default(uuid())
+  name     String             @unique
+  projects ProjectTechStack[]
+}
+
+model ProjectLanguage {
+  projectId  String
+  languageId String
+
+  project  Project  @relation(fields: [projectId], references: [id])
+  language Language @relation(fields: [languageId], references: [id])
+
+  @@id([projectId, languageId]) // 複合主キー：同じ組み合わせの重複を防ぐ
+  @@index([languageId])
+}
+
+// 使用言語
+model Language {
+  id       String            @id @default(uuid())
+  name     String            @unique
+  projects ProjectLanguage[]
+}
