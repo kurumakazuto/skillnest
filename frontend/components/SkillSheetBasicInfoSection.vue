@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import type { BasicInfoGetResponse } from '../types/api/skillSheet/basicInfoGetResponse'
+
+const basicInfoData = ref<BasicInfoGetResponse>()
+const { getBasicInfo, updateBasicInfo } = await useBasicInfo()
+
 const qualifications = ref(
   Array.from({ length: 7 }, () => ({
     year: '',
@@ -6,6 +11,17 @@ const qualifications = ref(
     name: '',
   }))
 )
+
+async function fetchBasicInfoData() {
+  // TODO: ローダーの表示を入れる
+  const { data, error } = await getBasicInfo()
+  if (error) {
+    return
+  }
+  basicInfoData.value = data.value
+}
+
+fetchBasicInfoData()
 </script>
 
 <template>
