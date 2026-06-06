@@ -1,4 +1,4 @@
 export interface SignUpPostResponse {
+  token: string
   success: boolean
-  error?: { message: string }
 }

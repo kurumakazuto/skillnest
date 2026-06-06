@@ -7,6 +7,9 @@ export default defineNuxtConfig({
   vite: {
     plugins: [tailwindcss()],
   },
+  imports: {
+    dirs: ['composables/**'],
+  },
 
   // CSSの読み込み
   css: ['~/assets/css/tailwind.css'],
