@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const userInfo = ref<LoginInfo>({ email: '', password: '' })
-
+const { signIn } = await useAuth()
 // ログインIDの前後の余分な空白を削除
 watch(
   () => userInfo.value.email,
@@ -83,10 +83,12 @@ async function loginUser() {
     email: userInfo.value.email,
     password: userInfo.value.password,
   }
-  const { data } = await useAuth().signIn(reqBody)
-  if (data.value?.success) {
-    await navigateTo('/skillSheetPage')
+  const { error } = await signIn(reqBody)
+  if (error.value) {
+    alert('メールアドレスかパスワードが間違っています。')
+    return
   }
+  await navigateTo('/skillSheetPage')
 }
 
 // エラーがある場合は作成ボタンは非活性
