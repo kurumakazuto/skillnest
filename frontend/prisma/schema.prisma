@@ -27,8 +27,8 @@ model User {
   nationality    String? // 国籍
   hasSpouse      Boolean? // 配偶者
   nearestStation String? // 最寄駅
-  qualifications UserQualification[] // 資格
-  skills         UserSkill[] // 経験技術
+  qualifications Qualification[] // 資格
+  skills         Skill[] // 経験技術
   specialties    String? // 得意分野
   selfPromotion  String? // 自己PR
   projects       Project[] // 経験プロジェクト
@@ -38,44 +38,28 @@ model User {
 // 資格（基本情報技術者試験など）
 model Qualification {
   id    String              @id @default(uuid())
-  name  String              @unique
-  users UserQualification[]
-}
-
-model UserQualification {
-  userId          String
-  qualificationId String
-  acquiredAt      DateTime? // 取得年月
-  user            User          @relation(fields: [userId], references: [id])
-  qualification   Qualification @relation(fields: [qualificationId], references: [id])
-
-  @@unique([userId, qualificationId]) // 同じ資格を重複登録させない
+  userId String
+  name  String
+  acquiredAt      DateTime? // 取得年月              
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([userId])
 }
 
 // 経験技術
 model Skill {
   id    String      @id @default(uuid())
-  name  String      @unique
-  users UserSkill[]
-}
-
-model UserSkill {
-  userId  String
-  skillId String
-
-  user  User  @relation(fields: [userId], references: [id])
-  skill Skill @relation(fields: [skillId], references: [id])
-
-  @@id([userId, skillId])
-  @@index([userId])
-  @@index([skillId])
+  userId String
+  name  String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)   
+  @@index([userId])   
 }
 
 // プロジェクト
 model Project {
   id                        String             @id @default(uuid())
   userId                    String
+  startDate                 DateTime  // 開始年月（必須）
+  endDate                   DateTime? // 終了年月（null = 現在）
   title                     String // プロジェクト名
   summary                   String // 概要（= プロジェクト概要）
   role                      String? // 役割
@@ -84,8 +68,8 @@ model Project {
   server                    String? // サーバー
   os                        String? // OS
   db                        String? // データベース
-  techStacks                ProjectTechStack[] // FW・MW・ツール等
-  languages                 ProjectLanguage[] // 使用言語
+  techStacks                TechStack[] // FW・MW・ツール等
+  languages                 Language[] // 使用言語
   hasRequirementsDefinition Boolean            @default(false) // 要件定義
   hasBasicDesign            Boolean            @default(false) // 基本設計
   hasDetailedDesign         Boolean            @default(false) // 詳細設計
@@ -93,41 +77,23 @@ model Project {
   hasIntegrationTest        Boolean            @default(false) // 結合テスト
   hasSystemTest             Boolean            @default(false) // 総合テスト
   hasMaintenanceOperation   Boolean            @default(false) // 保守・運用
-  user                      User               @relation(fields: [userId], references: [id])
-}
-
-model ProjectTechStack {
-  projectId   String
-  techStackId String
-
-  project   Project   @relation(fields: [projectId], references: [id])
-  techStack TechStack @relation(fields: [techStackId], references: [id])
-
-  @@id([projectId, techStackId]) // 複合主キー：同じ組み合わせの重複を防ぐ
-  @@index([techStackId])
+  user                      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // FW・MW・ツール等
 model TechStack {
   id       String             @id @default(uuid())
-  name     String             @unique
-  projects ProjectTechStack[]
-}
-
-model ProjectLanguage {
-  projectId  String
-  languageId String
-
-  project  Project  @relation(fields: [projectId], references: [id])
-  language Language @relation(fields: [languageId], references: [id])
-
-  @@id([projectId, languageId]) // 複合主キー：同じ組み合わせの重複を防ぐ
-  @@index([languageId])
+  projectId String
+  name     String
+  project  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)             
+  @@index([projectId])
 }
 
 // 使用言語
 model Language {
   id       String            @id @default(uuid())
-  name     String            @unique
-  projects ProjectLanguage[]
+  projectId  String
+  name     String            
+  project  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)             
+  @@index([projectId])
 }

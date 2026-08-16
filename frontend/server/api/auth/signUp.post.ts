@@ -1,8 +1,10 @@
 import argon2 from 'argon2'
-import { prisma } from '../../lib/prisma'
-import type { SignUpPostRequest } from '@/types/api/signUpPostRequest'
+import { prisma } from '../../../lib/prisma'
+import type { SignUpPostRequest } from '../../../types/api/auth/signUpPostRequest'
+import type { SignUpPostResponse } from '../../../types/api/auth/signUpPostResponse'
+import { SignJWT } from 'jose'
 
-export default defineEventHandler(async (event): Promise<any> => {
+export default defineEventHandler(async (event): Promise<SignUpPostResponse> => {
   const reqBody = await readBody<SignUpPostRequest>(event)
   const { email, password, confirmPassword } = reqBody
 
@@ -41,10 +43,19 @@ export default defineEventHandler(async (event): Promise<any> => {
   })
 
   // DBに保存
-  await prisma.user.create({
+  const newUser = await prisma.user.create({
     data: {
       email,
       password: hashedPassword,
     },
   })
+
+  // トークンを作成
+  const secret = new TextEncoder().encode(process.env.JWT_SECRET)
+  const token = await new SignJWT({ userId: newUser.id })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setExpirationTime('7d')
+    .sign(secret)
+
+  return { token }
 })
