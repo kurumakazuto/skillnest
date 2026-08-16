@@ -14,17 +14,18 @@ export default defineEventHandler(async (event): Promise<ProjectHistory> => {
     throw createError({ statusCode: 401, statusMessage: 'ユーザーが存在しません' })
   }
 
+  // 技術・言語はプロジェクト直下になったので include で直接取得
   const projects = await prisma.project.findMany({
     where: { userId },
     include: {
-      techStacks: { include: { techStack: true } },
-      languages: { include: { language: true } },
+      techStacks: true,
+      languages: true,
     },
   })
 
   const projectHistoryList: ProjectHistory['projectHistoryList'] = projects.map((project) => ({
-    startDate: project.startDate.toISOString(),
-    endDate: project.endDate?.toISOString() ?? null,
+    startDate: project.startDate.toISOString().slice(0, 10),
+    endDate: project.endDate?.toISOString().slice(0, 10) ?? null,
     title: project.title,
     summary: project.summary,
     role: project.role,
@@ -33,11 +34,8 @@ export default defineEventHandler(async (event): Promise<ProjectHistory> => {
     server: project.server,
     os: project.os,
     db: project.db,
-    techStacks: project.techStacks.map((ts) => ({
-      id: ts.techStack.id,
-      name: ts.techStack.name,
-    })),
-    languages: project.languages.map((l) => ({ id: l.language.id, name: l.language.name })),
+    techStacks: project.techStacks.map((ts) => ({ id: ts.id, name: ts.name })),
+    languages: project.languages.map((l) => ({ id: l.id, name: l.name })),
     hasRequirementsDefinition: project.hasRequirementsDefinition,
     hasBasicDesign: project.hasBasicDesign,
     hasDetailedDesign: project.hasDetailedDesign,

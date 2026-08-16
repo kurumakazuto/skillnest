@@ -22,18 +22,14 @@ export default defineEventHandler(async (event): Promise<any> => {
 
   // バリデーション
   // 文字数制限
-  validateMaxLengthString(name, '氏名', 50)
-  validateMaxLengthString(nameKana, 'ふりがな', 100)
-  validateMaxLengthString(nationality, '最寄駅', 50)
-  validateMaxLengthString(specialties, '得意分野', 100)
-  validateMaxLengthString(selfPromotion, '自己PR', 2000)
-
-  if (qualifications.length && qualifications.some((qualification) => qualification.length > 100)) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: '資格は100文字以内で入力してください。',
-    })
-  }
+  validateMaxLengthString(name, '氏名', 30)
+  validateMaxLengthString(nameKana, 'ふりがな', 30)
+  validateMaxLengthString(specialties, '得意分野', 150)
+  validateMaxLengthString(selfPromotion, '自己PR', 300)
+  validateMaxLengthString(nearestStation, '最寄駅', 18)
+  qualifications.forEach((qualification) => {
+    validateMaxLengthString(qualification.name, '資格', 30)
+  })
 
   // CookieからJWT取得し認証。問題なければuserID取得
   const userId = await getUserIdFromCookie(event)
@@ -51,29 +47,16 @@ export default defineEventHandler(async (event): Promise<any> => {
       nearestStation,
       qualifications: {
         deleteMany: {},
-        create: await Promise.all(
-          qualifications.map(async (name) => {
-            const qualification = await prisma.qualification.upsert({
-              where: { name },
-              create: { name },
-              update: {},
-            })
-            return { qualificationId: qualification.id }
-          })
-        ),
+        create: qualifications
+          .filter((qualification) => qualification.name)
+          .map((qualification) => ({
+            name: qualification.name,
+            acquiredAt: qualification.acquiredAt ? new Date(qualification.acquiredAt) : null,
+          })),
       },
       skills: {
         deleteMany: {},
-        create: await Promise.all(
-          skills.map(async (name) => {
-            const skill = await prisma.skill.upsert({
-              where: { name },
-              create: { name },
-              update: {},
-            })
-            return { skillId: skill.id }
-          })
-        ),
+        create: skills.map((skill) => ({ name: skill.name })),
       },
       specialties,
       selfPromotion,

@@ -10,19 +10,13 @@ export default defineNuxtConfig({
   imports: {
     dirs: ['composables/**'],
   },
-
+  ssr: false,
   // CSSの読み込み
   css: ['~/assets/css/tailwind.css'],
   app: {
-    head: {
-      link: [
-        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-        {
-          rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap',
-        },
-      ],
-    },
+    head: {},
+  },
+  runtimeConfig: {
+    fastApiBaseUrl: process.env.FAST_API_BASE_URL || 'http://localhost:8000',
   },
 })

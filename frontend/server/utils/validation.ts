@@ -21,3 +21,18 @@ export function validateMaxLengthString(
     })
   }
 }
+
+export function validateOutOfRange(
+  value: number | null,
+  fieldName: string,
+  minLength: number,
+  maxLength: number
+) {
+  if (value === null || value === undefined) return
+  if (value < minLength || value > maxLength) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: `${fieldName}は${minLength}〜${maxLength}で入力してください。`,
+    })
+  }
+}

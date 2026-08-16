@@ -19,5 +19,6 @@ export interface ProjectHistory {
     hasIntegrationTest: boolean // 結合テスト
     hasSystemTest: boolean // 総合テスト
     hasMaintenanceOperation: boolean // 保守・運用
+    isDeleted?: boolean // 削除フラグ
   }[]
 }
