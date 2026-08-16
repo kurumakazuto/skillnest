@@ -1,4 +1,7 @@
 <script setup lang="ts">
+// 画面のローダー表示制御
+const loader = ref(false)
+
 const userInfo = ref<LoginInfo>({ email: '', password: '' })
 const { signIn } = await useAuth()
 // ログインIDの前後の余分な空白を削除
@@ -53,29 +56,28 @@ const passwordError = computed(() => {
 })
 
 // 送信時チェック
-const inputError = ref<any[]>([])
+const displayError = ref<DisplayError[]>([])
 function validate() {
-  let error: any
   // 未入力
   // メールアドレス
-  const isEmailEmpty = userInfo.value.email
-  if (!isEmailEmpty) {
-    error = {
-      index: 0,
-    }
-    inputError.value.push(error)
+  if (!userInfo.value.email) {
+    displayError.value.push({
+      message: 'メールアドレスが未入力です。',
+    })
   }
   // パスワード
-  const isPasswordEmpty = userInfo.value.password
-  if (!isPasswordEmpty) {
-    error = {
-      index: 1,
-    }
-    inputError.value.push(error)
+  if (!userInfo.value.password) {
+    displayError.value.push({
+      message: 'パスワードが未入力です',
+    })
   }
-  if (!inputError.value.length) {
+  if (!displayError.value.length) {
     loginUser()
   }
+}
+
+function closeDisplayErrorDialog() {
+  displayError.value = []
 }
 
 async function loginUser() {
@@ -85,7 +87,9 @@ async function loginUser() {
   }
   const { error } = await signIn(reqBody)
   if (error.value) {
-    alert('メールアドレスかパスワードが間違っています。')
+    displayError.value.push({
+      message: 'メールアドレスかパスワードが間違っています。',
+    })
     return
   }
   await navigateTo('/skillSheetPage')
@@ -102,28 +106,30 @@ const isFormEmpty = computed(() => {
 </script>
 
 <template>
-  <div class="w-96 text-left space-y-5 mb-12">
-    <label class="block">メールアドレス</label>
-    <input
-      type="text"
-      placeholder="メールアドレス"
-      class="w-full border border-gray-300 bg-white text-gray-900 px-3 py-3 focus:outline-none rounded-xl shadow-md"
-      v-model="userInfo.email"
-      :class="[idError ? 'border-red-500' : '']"
-    />
-    <span class="w-full text-red-500" v-if="idError">{{ `！ ${idError}` }}</span>
-    <label class="block">パスワード</label>
-    <input
-      type="text"
-      placeholder="パスワード"
-      class="w-full border border-gray-300 bg-white text-gray-900 px-3 py-3 focus:outline-none rounded-xl shadow-md"
-      v-model="userInfo.password"
-    />
-    <span class="w-full text-red-500" v-if="passwordError">{{ `！ ${passwordError}` }}</span>
-  </div>
-  <div class="text-center mb-12">
-    <UiButton label="ログイン" :disabled="hasError || isFormEmpty" @click="validate()" />
-  </div>
+  <form @submit.prevent="validate">
+    <div class="w-96 text-left space-y-5 mb-12">
+      <label class="block">メールアドレス</label>
+      <input
+        type="text"
+        placeholder="メールアドレス"
+        class="w-full border border-gray-300 bg-white text-gray-900 px-3 py-3 focus:outline-none rounded-xl shadow-md"
+        v-model="userInfo.email"
+        :class="[idError ? 'border-red-500' : '']"
+      />
+      <span class="w-full text-red-500" v-if="idError">{{ `！ ${idError}` }}</span>
+      <label class="block">パスワード</label>
+      <input
+        type="password"
+        placeholder="パスワード"
+        class="w-full border border-gray-300 bg-white text-gray-900 px-3 py-3 focus:outline-none rounded-xl shadow-md"
+        v-model="userInfo.password"
+      />
+      <span class="w-full text-red-500" v-if="passwordError">{{ `！ ${passwordError}` }}</span>
+    </div>
+    <div class="text-center mb-12">
+      <UiButton label="ログイン" :disabled="hasError || isFormEmpty" />
+    </div>
+  </form>
   <div class="text-center">
     <NuxtLink
       to="/signUp"
@@ -131,6 +137,10 @@ const isFormEmpty = computed(() => {
       >アカウントをお持ちでない方はこちらから</NuxtLink
     >
   </div>
+  <UiLoader v-if="loader" />
+  <ErrorDisplayErrorDialog
+    v-if="displayError.length"
+    v-bind:errors="displayError"
+    @close="closeDisplayErrorDialog()"
+  />
 </template>
-
-<style scoped lang="stylus"></style>

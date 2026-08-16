@@ -57,5 +57,5 @@ export default defineEventHandler(async (event): Promise<SignUpPostResponse> => 
     .setExpirationTime('7d')
     .sign(secret)
 
-  return { token, success: true }
+  return { token }
 })

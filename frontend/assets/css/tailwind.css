@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 
 body {
-  font-family: 'Noto Sans JP', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'MS PGothic', 'ＭＳ Ｐゴシック', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+  font-size: 0.875rem; /* 14px */
 }

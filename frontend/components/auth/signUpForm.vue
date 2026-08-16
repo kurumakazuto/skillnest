@@ -1,4 +1,7 @@
 <script setup lang="ts">
+// 画面のローダー表示制御
+const loader = ref(false)
+
 const userInfo = ref<SignUpInfo>({ email: '', password: '', confirmPassword: '' })
 const { signUp } = await useAuth()
 
@@ -64,49 +67,40 @@ const confirmPasswordError = computed(() => {
 })
 
 // 登録時チェック
-const inputError = ref<any[]>([])
+const displayError = ref<DisplayError[]>([])
 function validate() {
-  let error: any
   // 未入力
   // メールアドレス
-  const isEmailEmpty = userInfo.value.email
-  if (!isEmailEmpty) {
-    error = {
-      index: 0,
-    }
-    inputError.value.push(error)
+  if (!userInfo.value.email) {
+    displayError.value.push({
+      message: 'メールアドレスが未入力です。',
+    })
   }
   // パスワード
-  const isPasswordEmpty = userInfo.value.password
-  if (!isPasswordEmpty) {
-    error = {
-      index: 1,
-    }
-    inputError.value.push(error)
+  if (!userInfo.value.password) {
+    displayError.value.push({
+      message: 'パスワードが未入力です',
+    })
   }
   // パスワード（確認用）
-  const isConfirmPasswordEmpty = userInfo.value.confirmPassword
-  if (!isConfirmPasswordEmpty) {
-    error = {
-      index: 2,
-    }
-    inputError.value.push(error)
+  if (!userInfo.value.confirmPassword) {
+    displayError.value.push({
+      message: 'パスワード(確認用)が未入力です',
+    })
   }
   // パスワードとパスワード（確認用）の一致確認
   if (userInfo.value.password !== userInfo.value.confirmPassword) {
-    error = {
-      index: 3,
-    }
-    inputError.value.push(error)
+    displayError.value.push({
+      message: 'パスワードとパスワード(確認用)が一致していません',
+    })
   }
-  if (!inputError.value.length) {
+  if (!displayError.value.length) {
     createUser()
   }
 }
 
-// エラーダイアログを閉じる
-function closeDialog() {
-  inputError.value = []
+function closeDisplayErrorDialog() {
+  displayError.value = []
 }
 
 // 登録
@@ -117,11 +111,16 @@ async function createUser() {
     password: userInfo.value.password,
     confirmPassword: userInfo.value.confirmPassword,
   }
-  const { data } = await signUp(reqBody)
-  if (data.value?.success) {
-    // メインページへ遷移し、トースト表示
-    await navigateTo('/skillSheetPage')
+  const { error } = await signUp(reqBody)
+  if (error.value) {
+    if (error.value.statusCode === 409) {
+      displayError.value.push({ message: '登録済みのメールアドレスです' })
+    } else {
+      displayError.value.push({ message: '予期しないエラーが発生しました' })
+    }
+    return
   }
+  await navigateTo('/skillSheetPage')
 }
 
 // エラーがある場合は作成ボタンは非活性
@@ -137,35 +136,38 @@ const isFormEmpty = computed(() => {
 </script>
 
 <template>
-  <div class="w-96 text-left space-y-5 mb-12">
-    <label class="block">メールアドレス</label>
-    <input
-      type="text"
-      placeholder="メールアドレス"
-      class="w-full border border-gray-300 bg-white text-gray-900 px-3 py-3 focus:outline-none rounded-xl shadow-md"
-      v-model="userInfo.email"
-      :class="[idError ? 'border-red-500' : '']"
-    />
-    <span class="w-full text-red-500" v-if="idError">{{ `！ ${idError}` }}</span>
-    <label class="block">パスワード</label>
-    <input
-      type="text"
-      placeholder="パスワード"
-      class="w-full border border-gray-300 bg-white text-gray-900 px-3 py-3 focus:outline-none rounded-xl shadow-md"
-      v-model="userInfo.password"
-    />
-    <span class="w-full text-red-500" v-if="passwordError">{{ `！ ${passwordError}` }}</span>
-    <label class="block">パスワード（確認用）</label>
-    <input
-      type="text"
-      placeholder="パスワード（確認用）"
-      class="w-full border border-gray-300 bg-white text-gray-900 px-3 py-3 focus:outline-none rounded-xl shadow-md"
-      v-model="userInfo.confirmPassword"
-    />
-    <span class="w-full text-red-500" v-if="confirmPasswordError">{{
-      `！ ${confirmPasswordError}`
-    }}</span>
-  </div>
+  <form @submit.prevent="validate">
+    <div class="w-96 text-left space-y-5 mb-12">
+      <label class="block">メールアドレス</label>
+      <input
+        type="text"
+        placeholder="メールアドレス"
+        class="w-full border border-gray-300 bg-white text-gray-900 px-3 py-3 focus:outline-none rounded-xl shadow-md"
+        v-model="userInfo.email"
+        :class="[idError ? 'border-red-500' : '']"
+      />
+      <span class="w-full text-red-500" v-if="idError">{{ `！ ${idError}` }}</span>
+      <label class="block">パスワード</label>
+      <input
+        type="password"
+        placeholder="パスワード"
+        class="w-full border border-gray-300 bg-white text-gray-900 px-3 py-3 focus:outline-none rounded-xl shadow-md"
+        v-model="userInfo.password"
+      />
+      <span class="w-full text-red-500" v-if="passwordError">{{ `！ ${passwordError}` }}</span>
+      <label class="block">パスワード（確認用）</label>
+      <input
+        type="password"
+        placeholder="パスワード（確認用）"
+        class="w-full border border-gray-300 bg-white text-gray-900 px-3 py-3 focus:outline-none rounded-xl shadow-md"
+        v-model="userInfo.confirmPassword"
+        @keydown.enter.prevent="validate()"
+      />
+      <span class="w-full text-red-500" v-if="confirmPasswordError">{{
+        `！ ${confirmPasswordError}`
+      }}</span>
+    </div>
+  </form>
   <div class="text-center mb-12">
     <UiButton label="作成" :disabled="hasError || isFormEmpty" @click="validate()" />
   </div>
@@ -176,7 +178,12 @@ const isFormEmpty = computed(() => {
       >すでにアカウントをお持ちの方はこちらから</NuxtLink
     >
   </div>
-  <ErrorInputErrorDialog v-if="inputError.length" v-bind:errors="inputError" @close="closeDialog" />
+  <UiLoader v-if="loader" />
+  <ErrorDisplayErrorDialog
+    v-if="displayError.length"
+    v-bind:errors="displayError"
+    @close="closeDisplayErrorDialog()"
+  />
 </template>
 
 <style scoped lang="stylus"></style>

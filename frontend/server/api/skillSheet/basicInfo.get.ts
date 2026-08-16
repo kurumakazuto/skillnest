@@ -8,37 +8,32 @@ export default defineEventHandler(async (event): Promise<BasicInfo> => {
 
   const userData = await prisma.user.findUnique({
     where: { id: userId },
+    include: {
+      qualifications: true,
+      skills: true,
+    },
   })
 
   if (!userData) {
     throw createError({ statusCode: 401, statusMessage: 'ユーザーが存在しません' })
   }
 
-  // 資格
-  const userQualifications = await prisma.userQualification.findMany({
-    where: { userId: userId },
-    include: { qualification: true },
-  })
-  const qualifications = userQualifications.map((uq) => ({
-    id: uq.qualification.id,
-    name: uq.qualification.name,
+  const qualifications = userData.qualifications.map((q) => ({
+    id: q.id,
+    name: q.name,
+    acquiredAt: q.acquiredAt ? q.acquiredAt.toISOString().slice(0, 7) : '',
   }))
 
-  // 経験技術
-  const userSkills = await prisma.userSkill.findMany({
-    where: { userId: userId },
-    include: { skill: true },
-  })
-  const skills = userSkills.map((us) => ({
-    id: us.skill.id,
-    name: us.skill.name,
+  const skills = userData.skills.map((s) => ({
+    id: s.id,
+    name: s.name,
   }))
 
   const basicInfoData = {
     name: userData.name,
     nameKana: userData.nameKana,
     gender: userData.gender,
-    birthDate: userData.birthDate?.toISOString() ?? null,
+    birthDate: userData.birthDate?.toISOString().slice(0, 10) ?? null,
     nationality: userData.nationality,
     hasSpouse: userData.hasSpouse,
     nearestStation: userData.nearestStation,

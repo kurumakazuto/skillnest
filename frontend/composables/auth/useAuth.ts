@@ -20,7 +20,7 @@ export const useAuth = async () => {
       token.value = data.value.token
     }
 
-    return { data, error }
+    return { error }
   }
 
   // ログイン
@@ -44,5 +44,18 @@ export const useAuth = async () => {
     navigateTo('/login')
   }
 
-  return { signUp, signIn, signOut, loggedIn, token }
+  // アカウント削除
+  const deleteAccount = async () => {
+    const { error } = await useFetch<any>('/api/auth/deleteAccount', {
+      method: 'DELETE',
+    })
+    if (!error.value) {
+      token.value = null
+      navigateTo('/signUp')
+    }
+
+    return { error }
+  }
+
+  return { signUp, signIn, signOut, loggedIn, deleteAccount, token }
 }

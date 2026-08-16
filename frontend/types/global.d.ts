@@ -17,7 +17,11 @@ declare global {
 
   interface Error {
     index: number // スプレッドシート上から
-    // level: number // エラーレベル。
+  }
+
+  type ProjectHistoryWithNumber = ProjectHistory['projectHistoryList'][number] & {
+    projectHistoryNumber: number
+    isOngoing: boolean // プロジェクトが継続中であるか
   }
 
   interface ProjectTechStack {
@@ -32,10 +36,28 @@ declare global {
   interface UserQualification {
     id: string
     name: string
+    acquiredAt: string
   }
 
   interface UserSkill {
     id: string
     name: string
+  }
+
+  interface DisplayError {
+    message: string
+    field?:
+      // 入力欄を赤くする時だけ
+      | 'startDate'
+      | 'title'
+      | 'summary'
+      | 'developmentScale'
+      | 'overallScale'
+      | 'server'
+      | 'os'
+      | 'db'
+      | 'techStacks'
+      | 'languages'
+    projectIndex?: number // 入力欄を赤くする時だけ
   }
 }

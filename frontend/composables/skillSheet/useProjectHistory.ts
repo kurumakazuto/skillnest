@@ -14,6 +14,7 @@ export const useProjectHistory = async () => {
       headers: {
         Authorization: `Bearer ${token.value}`,
       },
+      immediate: false,
     })
     return {
       data: ref(basicInfoData),
@@ -24,13 +25,22 @@ export const useProjectHistory = async () => {
   }
 
   const updateProjectHistory = async (reqBody: ProjectHistory) => {
-    const { data: response, error } = await useFetch<any>(`/api/skillSheet/projectHistory`, {
-      method: 'POST',
-      body: reqBody,
-    })
-    return {
-      data: response,
-      error: error,
+    // 保存は単発アクションなので $fetch（毎回1回だけ送る・キャッシュ/再発火なし）
+    try {
+      const response = await $fetch<any>(`/api/skillSheet/projectHistory`, {
+        method: 'POST',
+        body: reqBody,
+      })
+      return {
+        data: ref(response),
+        error: ref(null),
+      }
+    } catch (error) {
+      // コンポーネント側は error.value.statusCode を見るので FetchError をそのまま渡す
+      return {
+        data: ref(null),
+        error: ref(error as any),
+      }
     }
   }
 
