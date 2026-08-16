@@ -19,4 +19,23 @@ declare global {
     index: number // スプレッドシート上から
     // level: number // エラーレベル。
   }
+
+  interface ProjectTechStack {
+    id: string
+    name: string
+  }
+
+  interface ProjectLanguage {
+    id: string
+    name: string
+  }
+  interface UserQualification {
+    id: string
+    name: string
+  }
+
+  interface UserSkill {
+    id: string
+    name: string
+  }
 }

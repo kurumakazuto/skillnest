@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const userInfo = ref<SignUpInfo>({ email: '', password: '', confirmPassword: '' })
+const { signUp } = await useAuth()
 
 // ログインIDの前後の余分な空白を削除
 watch(
@@ -116,9 +117,10 @@ async function createUser() {
     password: userInfo.value.password,
     confirmPassword: userInfo.value.confirmPassword,
   }
-  const { data, error } = await useAuth().signUp(reqBody)
+  const { data } = await signUp(reqBody)
   if (data.value?.success) {
     // メインページへ遷移し、トースト表示
+    await navigateTo('/skillSheetPage')
   }
 }
 

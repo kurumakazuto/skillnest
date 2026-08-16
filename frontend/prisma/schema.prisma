@@ -76,6 +76,8 @@ model UserSkill {
 model Project {
   id                        String             @id @default(uuid())
   userId                    String
+  startDate                 DateTime  // 開始年月（必須）
+  endDate                   DateTime? // 終了年月（null = 現在）
   title                     String // プロジェクト名
   summary                   String // 概要（= プロジェクト概要）
   role                      String? // 役割
